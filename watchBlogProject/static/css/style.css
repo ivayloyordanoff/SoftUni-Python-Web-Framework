@@ -1,0 +1,32 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.content-wrapper {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+.footer {
+    flex-shrink: 0;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+body > div {
+    background: #f1f0ff;
+}
+
+.post-title {
+    text-decoration: none;
+    color: black;
+    text-align: center;
+}

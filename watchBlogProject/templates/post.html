@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container-fluid my-5">
+        <div class="row">
+            <div class="col-lg-6 offset-lg-3">
+
+                <div class="card">
+                    <h2 class="card-title text-center my-3">{{ post.title }}</h2>
+                    <div class="text-muted mb-3">
+                        <div style="margin-left: 20px;">
+                            Created: {{ post.created_on|date:"N j Y" }},
+                            Updated: {{ post.updated_on|timesince }} ago,
+                            Author: <a class="badge badge-secondary"
+                                       href="{% url 'profile details' post.author.username %}">{{ post.author.username }}</a>
+                        </div>
+                        <div style="margin-left: 20px;">
+                            <span>Categories:</span>
+                            {% if post.category.all %}
+                                {% for category in post.category.all %}
+                                    <span class="badge badge-light" style="color: black">{{ category }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="badge badge-light" style="color: black">None</span>
+                            {% endif %}
+                        </div>
+                        <div style="margin-left: 20px;">
+                            <span>Tags:</span>
+                            {% if post.tags.all %}
+                                {% for tag in post.tags.all %}
+                                    <span class="badge badge-dark">{{ tag }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="badge badge-dark">#none</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if post.image %}
+                        <img class="card-img-top" src="{{ post.image.url }}" alt="{{ post.title }}">
+                    {% endif %}
+                    {% if post.author == request.user or request.user.is_staff %}
+                        <div class="mt-4 mx-3">
+                            <a class="btn btn-primary" style="border-radius: 15px;"
+                               href="{% url 'post edit' post.id %}">EDIT</a>
+                            <a class="btn btn-danger" style="border-radius: 15px;"
+                               href="{% url 'post delete' post.id %}">DELETE</a>
+                        </div>
+                    {% endif %}
+                    <div class="card-text mt-5 p-4">
+                        {{ post.content }}
+                    </div>
+                    <div class="card-footer">
+                        {% if request.user.is_authenticated %}
+                            <button class="btn btn-outline-primary" id="post-like-button"
+                                    data-like-url="{% url 'like post' post.pk %}">
+                                {% if user_has_liked %}
+                                    <i class="fas fa-thumbs-up"></i> Unlike
+                                {% else %}
+                                    <i class="far fa-thumbs-up"></i> Like
+                                {% endif %}
+                            </button>
+                        {% endif %}
+                        <span id="like-count">{{ post.like_set.count }} Like{{ post.like_set.count|pluralize }}</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% if comments %}
+            <div class="row mt-5">
+                <div class="col-lg-6 offset-lg-3">
+                    Comment{{ comments.count|pluralize }}
+                    <span class="badge badge-dark ml-2">{{ comments.count }}</span>
+                </div>
+                {% for comment in comments %}
+                    <div class="col-lg-6 offset-lg-3 mt-2">
+                        <div class="card p-2">
+                            <div class="row">
+                                <div class="col-12">
+                                    {% if comment.author.profile.image %}
+                                        <img class="rounded-circle mr-2" style="max-width: 250px; max-height: 250px"
+                                             src="{{ comment.author.profile.image.url }}"
+                                             alt="{{ comment.author.username }} Avatar">
+                                    {% else %}
+                                        <img class="rounded-circle mr-2" style="max-width: 250px; max-height: 250px"
+                                             src="{% static 'images/default-profile-pic.png' %}"
+                                             alt="Default Avatar">
+                                    {% endif %}
+                                    by <a class="badge badge-secondary"
+                                          href="{% url 'profile details' comment.author.username %}">{{ comment.author.username }}</a>
+                                </div>
+                                <div style="margin-left: 15px;">
+                                    Last updated: {{ comment.updated_on|timesince }} ago
+                                    <p class="m-1 mt-3">{{ comment.content }}</p>
+                                    <p class="text-right text-muted"><small
+                                            style="margin-right: 20px">{{ comment.created_on }}</small></p>
+                                </div>
+                                {% if comment.author == request.user or request.user.is_staff %}
+                                    <div class="mt-4 mx-3">
+                                        <a class="btn btn-primary" style="border-radius: 15px;"
+                                           href="{% url 'comment edit' comment.id %}">EDIT</a>
+                                        <a class="btn btn-danger" style="border-radius: 15px;"
+                                           href="{% url 'comment delete' comment.id %}">DELETE</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="row mt-5">
+            <div class="col-lg-6 offset-lg-3">
+                {% if request.user.is_authenticated %}
+                    <h3>Leave a comment</h3>
+                    <form method='POST'>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <span class="ml-2"></span>{{ form.content.label_tag }}
+                        <textarea class="form-control {% if form.content.errors %}is-invalid{% endif %}"
+                                  id="id_content"
+                                  name="content" rows="4">{{ form.content.value|default:'' }}</textarea>
+                    </div>
+                    <button class="btn btn-primary ml-2" style="border-radius: 15px;" type="submit">REPLY</button>
+                {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const likeButton = document.getElementById('post-like-button');
+            const likeCountElement = document.getElementById('like-count');
+
+            likeButton.addEventListener('click', () => {
+                const likeUrl = likeButton.getAttribute('data-like-url');
+
+                fetch(likeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const likeCount = data.likes_count;
+                        likeCountElement.innerHTML = `${likeCount} Like${likeCount !== 1 ? 's' : ''}`;
+
+                        if (data.liked) {
+                            likeButton.innerHTML = `Unlike`;
+                        } else {
+                            likeButton.innerHTML = `Like`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === name + '=') {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+
+{% endblock content %}

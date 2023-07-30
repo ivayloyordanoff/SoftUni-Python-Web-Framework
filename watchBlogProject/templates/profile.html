@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <div class="card col-lg-6 offset-lg-3 mb-3">
+                <div class="row">
+                    {% if user.profile.image %}
+                        <img class="card-img-top col-sm-3 col-4 my-3" src="{{ profile.image.url }}"
+                             alt="{{ user.username }}">
+                    {% else %}
+                        <img class="card-img-top col-sm-3 col-4 my-3"
+                             src="{% static 'images/default-profile-pic.png' %}" alt="{{ user.username }}">
+                    {% endif %}
+                    <div class="card-body col-9">
+                        <h2 class="card-title my-3">{{ user.username }}</h2>
+                        <p>Last login on: {{ user.last_login }}</p>
+                        <p class="card-text">{{ user.profile.about_me }}</p>
+                        {% if request.user == user %}
+                            <p><a class="btn btn-primary" style="border-radius: 15px;"
+                                  href="{% url 'profile edit' profile_id=user.profile.id %}">EDIT YOUR PROFILE</a></p>
+                            <p><a class="btn btn-warning" style="border-radius: 15px;"
+                                  href="{% url 'password change' %}">CHANGE PASSWORD</a></p>
+                            <p><a class="btn btn-danger" style="border-radius: 15px;"
+                                  href="{% url 'profile delete' profile.pk %}">DELETE YOUR PROFILE</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

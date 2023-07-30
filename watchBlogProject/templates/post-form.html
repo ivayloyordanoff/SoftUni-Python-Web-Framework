@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-3">
+                <h2 class=" my-5 text-center">{% if update %}Edit Post{% else %}Add Post{% endif %}</h2>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        {{ form.title.label_tag }}
+                        <input type="text" class="form-control {% if form.title.errors %}is-invalid{% endif %}"
+                               id="id_title"
+                               name="title" value='{{ form.title.value|default:"" }}'>
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.content.label_tag }}
+                        <textarea type="text" class="form-control {% if form.content.errors %}is-invalid{% endif %}"
+                                  id="id_content"
+                                  name="content" cols="40" rows="10">{{ form.content.value|default:"" }}</textarea>
+                        {% if form.content.errors %}
+                            <div class="invalid-feedback">{{ form.content.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.image.label_tag }}<br>
+                        <input type="file" class="{% if form.image.errors %}is-invalid{% endif %}" id="id_image"
+                               name="image"
+                               accept="image/*">
+                        {% if form.image.errors %}
+                            <div class="invalid-feedback">{{ form.image.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_category">Categories:</label><br>
+                        <select class="custom-select w-100" name="category" id="id_category" multiple>
+                            {% for category in form.fields.category.queryset %}
+                                <option value="{{ category.pk }}"
+                                        {% if category in form.instance.category.all %}selected{% endif %}>{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.category.errors %}
+                            <div class="invalid-feedback">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_tags">Tags:</label><br>
+                        <select class="custom-select w-100" name="tags" id="id_tags" multiple>
+                            {% for tag in form.fields.tags.queryset %}
+                                <option value="{{ tag.pk }}"
+                                        {% if tag in form.instance.tags.all %}selected{% endif %}>{{ tag }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.tags.errors %}
+                            <div class="invalid-feedback">{{ form.tags.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block"
+                            style="border-radius: 15px; margin-bottom: 50px;">
+                        {% if update %}EDIT{% else %}CREATE{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

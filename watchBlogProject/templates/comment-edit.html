@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-3">
+                <h2 class=" my-5 text-center">Edit Comment</h2>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        {{ form.content.label_tag }}
+                        <textarea type="text" class="form-control {% if form.content.errors %}is-invalid{% endif %}"
+                                  id="id_content"
+                                  name="content" cols="40" rows="10">{{ form.content.value|default:"" }}</textarea>
+                        {% if form.content.errors %}
+                            <div class="invalid-feedback">{{ form.content.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block"
+                            style="border-radius: 15px;">
+                        EDIT
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
